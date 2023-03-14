@@ -27,7 +27,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# MySQL 환경변수 설정 후 연결
+# MySQL 환경변수 설정 
 mydb = mysql.connector.connect(
     host=host,
     user=user,
@@ -59,16 +59,25 @@ async def root(request: Request):
 #     mydb.commit()
     # return templates.TemplateResponse("index.html", {"request": request})
 
-@app.post("/InsertUser")
+@app.get("/insertuser",response_class=HTMLResponse)
+async def create_user(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request })
+
+
+@app.post("/insertuser", response_class=HTMLResponse)
 async def create_user(request: Request, name: str = Form(...),email: str = Form(...), age: int = Form(...)):
+    print(f'name: {name}')
+    print(f'email: {email}')
+    print(f'age: {age}')
+
     cursor = mydb.cursor()
     query = "INSERT INTO users (name, email, age) VALUES (%s, %s, %s)"
     values = (name, email, age)
     cursor.execute(query, values)
     mydb.commit()
     # return {"message": "User created successfully"}
-    return templates.TemplateResponse("index.html", {"request": request})
-    # return templates.TemplateResponse("User_Insert.html", {"request": request })
+    # return templates.TemplateResponse("index.html", {"request": request, "name":name, "email":email, "age":age})
+    return templates.TemplateResponse("index.html", {"request": request })
 
 # 모든 사용자 가져오기
 @app.get("/users")
@@ -79,18 +88,27 @@ async def get_users():
     return cursor.fetchall()
 
 # 특정 사용자 가져오기
-@app.get("/users/{user_id}")
-async def get_user(user_id: int):
+# @app.get("/users/{user_id}")
+# async def get_user(user_id: int):
+#     cursor = mydb.cursor(dictionary=True)
+#     query = "SELECT * FROM users WHERE id=%s"
+#     value = (user_id,)
+#     cursor.execute(query, value)
+#     return cursor.fetchone()
+
+@app.get("/users/{user_id}", response_class=HTMLResponse)
+async def get_user(request: Request, user_id: int):
     cursor = mydb.cursor(dictionary=True)
     query = "SELECT * FROM users WHERE id=%s"
     value = (user_id,)
     cursor.execute(query, value)
-    return cursor.fetchone()
+    # return cursor.fetchone()
+    return templates.TemplateResponse("user.html", {"request":request, "userid":user_id})
 
 # 사용자 수정
-@app.put("/users/{user_id}")
+@app.put("/EditUser/{user_id}")
 async def update_user(user_id: int, user: User):
-    cursor = mydb.cursor()
+    cursor = mydb.cursor(buffered=True)
     query = "UPDATE users SET name=%s, email=%s, age=%s WHERE id=%s"
     values = (user.name, user.email, user.age, user_id)
     cursor.execute(query, values)
@@ -98,7 +116,7 @@ async def update_user(user_id: int, user: User):
     return {"message": "User updated successfully"}
 
 # 사용자 삭제
-@app.delete("/users/{user_id}")
+@app.delete("/DelUsers/{user_id}")
 async def delete_user(user_id: int):
     cursor = mydb.cursor()
     query = "DELETE FROM users WHERE id=%s"
