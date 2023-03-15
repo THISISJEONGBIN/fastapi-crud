@@ -215,13 +215,13 @@ async def read_item(request: Request, user_id: int, response_class=HTMLResponse)
     user = cursor.fetchone()
     return templates.TemplateResponse("update.html", {"request": request, "user": user})
 
-
+# 밑 코드 실행시 localhost/docs 에서 Object of type 'type' is not JSON serializable 오류 뜸 
 @app.post("/update")
 async def update_item(request: Request, user_id: int = Form(...), name: str = Form(...), email: str = Form(...), age: int = Form(...)):
     cursor = mydb.cursor(dictionary=True)
     cursor.execute("UPDATE users SET name = %s, email = %s ,age = %s WHERE id = %s", (name,email ,age, user_id))
     db.commit()
-    # return {"message": "Data updated successfully."}
-    return templates.TemplateResponse("update.html", {"request": request})
+    return {"message": "Data updated successfully."}
+
 
 
