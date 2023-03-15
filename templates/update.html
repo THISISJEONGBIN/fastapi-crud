@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Update Data</title>
+    </head>
+    <body>
+        <h1>Update Data</h1>
+        <form method="post">
+            <input type="hidden" name="id" value="{{ user.id }}">
+            <label for="name">Name:</label>
+            <input type="text" name="name" value="{{ user.name }}"><br>
+            <label for="age">email:</label>
+            <input type="text" name="email" value="{{ user.email }}"><br>
+            <label for="age">Age:</label>
+            <input type="text" name="age" value="{{ user.age }}"><br>
+            <input type="submit" value="Update">
+        </form>
+    </body>
+</html>
+
+

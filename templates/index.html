@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,15 +8,33 @@
 </head>
 <body>
     <h1>form</h1>
-    <form method="post">
+    <form method="post" action="/">
         <label for="name">name</label><br>
-        <input type="text" name="name"><br>
+        <input type="text" name="name" id="name"><br>
         <label for="email">email</label><br>
-        <input type="text" name="email"><br>
+        <input type="text" name="email" id="email"><br>
         <label for="age">age</label><br>
-        <input type="text" name="age"><br>
+        <input type="text" name="age" id="age"><br>
         <input type="submit" value="submit">
-
     </form>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Create User</title>
+</head>
+<body>
+	<h1>Create User</h1>
+	<form method="POST">
+		<label for="name">Name:</label>
+		<input type="text" id="name" name="name" required><br><br>
+		<label for="email">Email:</label>
+		<input type="email" id="email" name="email" required><br><br>
+		<label for="age">Age:</label>
+		<input type="number" id="age" name="age" min="1" max="100" required><br><br>
+		<input type="submit" value="Create">
+	</form>
 </body>
 </html>

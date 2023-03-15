@@ -1,7 +1,8 @@
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from starlette.responses import RedirectResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
@@ -44,7 +45,8 @@ class User(BaseModel):
 
 @app.get("/", response_class=HTMLResponse) 
 async def root(request: Request): 
-	return templates.TemplateResponse("root.html", {"request": request})
+	# return templates.TemplateResponse("root.html", {"request": request})
+    return RedirectResponse(url="/insertuser", status_code=302)
 
 
 
@@ -81,42 +83,103 @@ async def create_user(request: Request, name: str = Form(...),email: str = Form(
 
 # 모든 사용자 가져오기
 @app.get("/users")
-async def get_users():
+async def get_users(request: Request):
     cursor = mydb.cursor(dictionary=True)
     query = "SELECT * FROM users"
     cursor.execute(query)
     return cursor.fetchall()
 
+
 # 특정 사용자 가져오기
 # @app.get("/users/{user_id}")
 # async def get_user(user_id: int):
-#     cursor = mydb.cursor(dictionary=True)
+#     cursor = mydb.cursor(buffered=True)
 #     query = "SELECT * FROM users WHERE id=%s"
 #     value = (user_id,)
 #     cursor.execute(query, value)
 #     return cursor.fetchone()
 
-@app.get("/users/{user_id}", response_class=HTMLResponse)
+# @app.get("/users/{user_id}",response_class=HTMLResponse)
+# async def create_user1(request: Request):
+#     return templates.TemplateResponse("user.html", {"request": request })
+
+# @app.get("/users/{user_id}",response_class=HTMLResponse)
+# async def get_user(request : Request, user_id: int):
+#     cursor = mydb.cursor(buffered=True)
+#     query = "SELECT * FROM users WHERE id=%s"
+#     value = (user_id,)
+#     cursor.execute(query, value)
+#     # return cursor.fetchone()
+#     return templates.TemplateResponse("user.html", {"request": request ,"id" : id})
+
+@app.get("/users:{user_id}",response_class=HTMLResponse)
+async def create_user(request: Request):
+    return templates.TemplateResponse("user.html", {"request": request, "user": user})
+
+# @app.get("/users:{user_id}", response_class=HTMLResponse)
+# async def get_user(request: Request, user_id: int):
+#     cursor = mydb.cursor(buffered=True)
+#     query = "SELECT * FROM users WHERE id=%s"
+#     value = (user_id,)
+#     cursor.execute(query, value)
+#     user = cursor.fetchone()
+#     return templates.TemplateResponse("user.html", {"request": request, "user": user})
+
+# @app.get("/users/{user_id}",response_class=HTMLResponse)
+# async def get_user(request: Request, user_id: int):
+#     cursor = mydb.cursor(buffered=True)
+#     query = "SELECT * FROM users WHERE id=%s"
+#     value = (user_id,)
+#     cursor.execute(query, value)
+#     # return cursor.fetchone()
+#     return templates.TemplateResponse("user.html", {"request": request, "user": user})
+
+@app.get("/users/{user_id}")
 async def get_user(request: Request, user_id: int):
     cursor = mydb.cursor(dictionary=True)
     query = "SELECT * FROM users WHERE id=%s"
     value = (user_id,)
     cursor.execute(query, value)
-    # return cursor.fetchone()
-    return templates.TemplateResponse("user.html", {"request":request, "userid":user_id})
+    user = cursor.fetchone()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return templates.TemplateResponse("user.html", {"request": request, "user": user})
+
+
 
 # 사용자 수정
-@app.put("/EditUser/{user_id}")
-async def update_user(user_id: int, user: User):
-    cursor = mydb.cursor(buffered=True)
-    query = "UPDATE users SET name=%s, email=%s, age=%s WHERE id=%s"
-    values = (user.name, user.email, user.age, user_id)
-    cursor.execute(query, values)
-    mydb.commit()
-    return {"message": "User updated successfully"}
+
+
+
+
+# @app.get("/edituser/{user_id}",response_class=HTMLResponse)
+# async def create_user(request: Request):
+#     return templates.TemplateResponse("edit.html", {"request": request })
+
+# @app.put("/edituser/{user_id}")
+# async def update_user(request : Request, user_id: int,name: str = Form(...),email: str = Form(...), age: int = Form(...)):
+#     cursor = mydb.cursor(buffered=True)
+#     query = "UPDATE users SET name=%s, email=%s, age=%s WHERE id=%s"
+#     values = (name, email, age, user_id)
+#     cursor.execute(query, values)
+#     mydb.commit()
+#     return {"message": "User updated successfully"}
+    # return templates.TemplateResponse("edit.html", {"request": request ,"name" : name,"email" : email, "age" : age})
+    # return RedirectResponse(url="/users", status_code=302)
+
+# @app.put("/edituser/{user_id}")
+# async def update_user(request : Request, user_id: int,name: str = Form(...),email: str = Form(...), age: int = Form(...)):
+#     cursor = mydb.cursor(buffered=True)
+#     query = "UPDATE users SET name=%s, email=%s, age=%s WHERE id=%s"
+#     values = (name, email, age, user_id)
+#     cursor.execute(query, values)
+#     mydb.commit()
+#     return templates.TemplateResponse("edit.html", {"request": request })
+
+    # return {"message": "User updated successfully"}
 
 # 사용자 삭제
-@app.delete("/DelUsers/{user_id}")
+@app.delete("/delusers/{user_id}")
 async def delete_user(user_id: int):
     cursor = mydb.cursor()
     query = "DELETE FROM users WHERE id=%s"
@@ -124,3 +187,41 @@ async def delete_user(user_id: int):
     cursor.execute(query, value)
     mydb.commit()
     return {"message": "User deleted successfully"}
+
+
+# @app.get("/update/{id}")
+# async def read_item(request: Request, user_id: int):
+#     cursor = mydb.cursor(dictionary=True)
+#     query = "SELECT * FROM users WHERE id=%s"
+#     value = (user_id,)
+#     cursor.execute(query, value)
+#     user = cursor.fetchone()
+#     return templates.TemplateResponse("update.html", {"request": request, "user": user})
+
+# @app.get("/update")
+# async def update_item(request: Request, user_id: int = Form(...), name: str = Form(...),email: str = Form(...), age: int = Form(...)):
+#     cursor = mydb.cursor(dictionary=True)
+#     query = ("UPDATE users SET name=%s, email=%s, age=%s WHERE id=%s")
+#     values = (user_id,name, email, age)
+#     cursor.execute(query, values)
+#     mydb.commit()
+#     # return {"message": "Data updated successfully."}
+#     return templates.TemplateResponse("update.html", {"request": request})
+
+@app.get("/update/{user_id}")
+async def read_item(request: Request, user_id: int, response_class=HTMLResponse):
+    cursor = mydb.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+    user = cursor.fetchone()
+    return templates.TemplateResponse("update.html", {"request": request, "user": user})
+
+
+@app.post("/update")
+async def update_item(request: Request, user_id: int = Form(...), name: str = Form(...), email: str = Form(...), age: int = Form(...)):
+    cursor = mydb.cursor(dictionary=True)
+    cursor.execute("UPDATE users SET name = %s, email = %s ,age = %s WHERE id = %s", (name,email ,age, user_id))
+    db.commit()
+    # return {"message": "Data updated successfully."}
+    return templates.TemplateResponse("update.html", {"request": request})
+
+
